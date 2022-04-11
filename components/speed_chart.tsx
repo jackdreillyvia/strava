@@ -46,7 +46,18 @@ function BrushChart({
   onChange,
 }: BrushProps) {
   const brushRef = useRef<BaseBrush | null>(null);
-  const [filteredStock, setFilteredStock] = useState(data);
+  const [filteredStockState, setFilteredStock] = useState(data);
+  const doNotRender = filteredStockState.length < 2;
+  const filteredStock = useMemo(
+    () =>
+      doNotRender
+        ? [
+            { time: 0, speed: 0 },
+            { time: 1, speed: 0 },
+          ]
+        : filteredStockState,
+    [filteredStockState, doNotRender]
+  );
 
   const onBrushChange = (domain: Bounds | null) => {
     if (!domain) return;
@@ -70,9 +81,6 @@ function BrushChart({
     bottomChartHeight - brushMargin.top - brushMargin.bottom,
     0
   );
-  if (!filteredStock.length) {
-    return undefined;
-  }
 
   // scales
   const dateScale = useMemo(
@@ -146,6 +154,9 @@ function BrushChart({
       brushRef.current.updateBrush(updater);
     }
   };
+  if (doNotRender) {
+    return undefined;
+  }
 
   return (
     <div>
